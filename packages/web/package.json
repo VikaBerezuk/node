@@ -4,9 +4,13 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-      "start": "webpack"
+      "start": "webpack",
+      "build": "cross-env Node_ENV=developer webpack",
+      "build:prod": "cross-env Node_ENV=production webpack",
+      "build:analyze": "cross-env Node_ENV=production webpack --analyse"
   },
     "dependencies": {
+      "cross-env": "^7.0.3",
       "@babel/core": "7.16.12",
       "@babel/plugin-proposal-class-properties": "7.16.7",
       "@babel/preset-env": "7.16.11",

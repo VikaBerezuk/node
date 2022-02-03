@@ -16,7 +16,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "build": "tsc",
-    "clean": "rimraf ./dist",
+    "clear": "rimraf ./dist",
     "test": "jest"
   }
 }

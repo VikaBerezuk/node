@@ -1,2 +1,7 @@
 import './styles.scss';
-console.log('test')
+
+console.log('test');
+
+export function test() {
+  console.log('test');
+}

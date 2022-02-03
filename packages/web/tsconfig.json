@@ -1,13 +1,9 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "target": "es2020",
-    "sourceMap": true,
-    "typeRoots": ["node_modules/@types"],
-    "types": ["@types/jest", "node"]
+    "outDir": "dist",
+    "rootDir": ".",
   },
-  "noEmit": true,
-  "lib": ["ES2019"],
-  "include": ["./src/**/*.ts", "./test/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "src/tests"]
 }
