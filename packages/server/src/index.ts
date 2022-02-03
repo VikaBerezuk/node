@@ -1,8 +1,11 @@
 import express from 'express';
 import path from "path";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const server = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 server.use(express.static('./../web/dist'));
 server.get('/', (req, response) => {
