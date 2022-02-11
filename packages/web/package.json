@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "webpack server",
+    "start": "webpack",
     "build": "cross-env Node_ENV=developer webpack",
     "build:prod": "cross-env Node_ENV=production webpack",
     "build:analyze": "cross-env Node_ENV=production webpack --analyze",
