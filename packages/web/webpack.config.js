@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const dotenv = require('dotenv');
@@ -7,11 +6,15 @@ const dotenvExpand = require('dotenv-expand');
 const envs = dotenv.config();
 dotenvExpand.expand(envs);
 
-const isDevMode = process.env.NODE_ENV !== 'production'; // false;
+const isDevMode = process.env.NODE_ENV !== 'production';
+
+function getAppSrc() {
+  return path.resolve(process.cwd(), 'src');
+}
 
 module.exports = {
   mode: isDevMode ? 'development' : 'production',
-  entry: './src/index.ts',
+  entry: './src/index.js',
   module: {
     rules: [
       { test: /\.(ts)$/, use: 'babel-loader' },
@@ -23,7 +26,8 @@ module.exports = {
     filename: 'index_bundle.js',
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.json', 'js'],
+    extensions: ['.ts', '.tsx', '.json', '.js'],
+    symlinks: false,
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -32,4 +36,34 @@ module.exports = {
     }),
   ],
   devtool: 'source-map',
+  devServer: {
+    hot: true,
+    open: true, // ['/login.html'],
+    compress: true,
+    host: 'localhost',
+    port: 3003,
+    allowedHosts: 'all',
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': '*',
+      'Access-Control-Allow-Headers': '*',
+    },
+    static: {
+      directory: path.join(process.cwd(), 'dist'),
+      publicPath: '',
+      watch: {
+        ignored: getAppSrc(),
+      },
+    },
+    client: {
+      logging: 'info',
+      overlay: {
+        errors: true,
+        warnings: false,
+      },
+    },
+    devMiddleware: {
+      publicPath: '',
+    },
+  },
 };
