@@ -7,23 +7,36 @@ imageForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const file = imageInput.files[0];
 
-  // get secure url from our server
-  const { url } = await fetch('/s3Url').then((res) => res.json());
-  console.log(url);
+  const { url } = await fetch('/s3Url')
+    .then((res) => res.json());
 
-  // post the image direclty to the s3 bucket
+  console.log(file, url)
   await fetch(url, {
     method: 'PUT',
     headers: {
       'Content-Type': 'multipart/form-data',
     },
     body: file,
-  });
+  })
+    .catch((err) => {
+      const node = document.getElementById('result');
+      node.innerHTML = 'Что-то пошло не так. Пожалуйста, попытайтесь еще раз!';
+      console.log(err);
+    });
 
   const imageUrl = url.split('?')[0];
-  console.log(imageUrl);
-  // post requst to my server to store any extra data
+
+  const result = document.getElementById('result');
   const img = document.createElement('img');
   img.src = imageUrl;
-  document.body.appendChild(img);
+  const div = document.createElement('div');
+  div.innerText = 'Вы можете скачать вашу картинку:'
+  const a = document.createElement('a');
+  a.href = imageUrl;
+  a.innerText = 'download img';
+
+  result.appendChild(img);
+  result.appendChild(div);
+  result.appendChild(a);
 });
+;

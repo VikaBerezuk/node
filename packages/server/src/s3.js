@@ -1,9 +1,5 @@
 const dotenv = require('dotenv');
 const aws = require('aws-sdk');
-const crypto = require('crypto');
-const { promisify } = require('util');
-
-const randomBytes = promisify(crypto.randomBytes);
 
 dotenv.config();
 
@@ -20,12 +16,10 @@ const s3 = new aws.S3({
 });
 
 async function generateUploadURL() {
-  const rawBytes = await randomBytes(16);
-  const imageName = rawBytes.toString('hex');
-
+  const fileName = `${Date.now()}`;//test.png?? формат
   const params = {
     Bucket: bucketName,
-    Key: imageName,
+    Key: fileName,
     Expires: 60,
   };
 
