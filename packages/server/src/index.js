@@ -1,5 +1,5 @@
 const express = require('express');
-// const multer  = require('multer');
+const multer = require('multer');
 const { generateUploadURL } = require('./s3');
 
 const app = express();
@@ -7,40 +7,57 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static('./../web/dist'));
 
-// const storageConfig = multer.diskStorage({
-//   destination: (req, file, cb) =>{
-//     cb(null, "uploads");
-//   },
-//   filename: (req, file, cb) =>{
-//     cb(null, file.originalname);
-//   }
-// });
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 20971520,
+  },
+  fileFilter: (req, file, cb) => {
+    const fileSize = parseInt(req.headers['content-length'], 10);
+    if(fileSize > 20971520) {
+      return cb( new Error('File to large'));
+    }
+    return cb(null, true);
+  }
+});
 
-// const fileFilter = (req, file, cb) => {
-//   if(file.mimetype === "image/png" ||
-//     file.mimetype === "image/jpg"||
-//     file.mimetype === "image/jpeg"){
-//     cb(null, true);
-//   }
-//   else{
-//     cb(null, false);
-//   }
-// }
-//max size  20971520 === 20
-// app.use(multer({storage:storageConfig, fileFilter: fileFilter}).single("filedata"));
-// app.put("/s3Url", function (req, res, next) {
-//
-//   let filedata = req.file;
-//   console.log(filedata);
-//   if(!filedata)
-//     res.send("Ошибка при загрузке файла");
-//   else
-//     res.send("Файл загружен");
-// });
-
-app.get('/s3Url', async (req, res) => {
-  const url = await generateUploadURL();
-  res.send({ url });
+app.post('/*', (req, res) => {
+  const uploadToS3 = upload.single('file');
+  uploadToS3(req, res, async (err) => {
+    if (err) {
+      console.log(err);
+    }
+    if (req.file) {
+      const fileName = `${Date.now()}_${req.file.originalname.replace(/\s/g, '')}`;
+      const params = {
+        Body: req.file.buffer,
+        Bucket: process.env.BUCKET_NAME,
+        Key: fileName,
+      };
+      const arrSize = [
+        { name: 'thumb', size: 300 },
+        { name: 'medium', size: 1024 },
+        { name: 'large', size: 2048 },
+      ];
+      const arrPromise = [];
+      arrSize.forEach((item) => {
+        const promise = generateUploadURL(params, req.file, fileName, item.size, item.name).then((data) => {
+            console.log(data);
+            return {
+              size: `${item.name}`,
+              href: `https://upload-s3-bucket-thing.s3.eu-central-1.amazonaws.com/${item.name}_${fileName}`
+            };
+          },
+        );
+        arrPromise.push(promise);
+      });
+      Promise.all(arrPromise).then(data => {
+        console.log(data);
+        res.send(data);
+      }).catch((err) => console.log(err));
+    }
+  });
 });
 
 app.listen(PORT, () => {

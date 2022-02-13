@@ -1,10 +1,10 @@
 const dotenv = require('dotenv');
 const aws = require('aws-sdk');
+const sharp = require('sharp');
 
 dotenv.config();
 
-const region = 'eu-central-1';
-const bucketName = 'upload-s3-bucket-thing';
+const region = process.env.REGION;
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 
@@ -15,15 +15,20 @@ const s3 = new aws.S3({
   signatureVersion: 'v4',
 });
 
-async function generateUploadURL() {
-  const fileName = `${Date.now()}`;//test.png?? формат
-  const params = {
-    Bucket: bucketName,
-    Key: fileName,
-    Expires: 60,
-  };
-
-  return await s3.getSignedUrlPromise('putObject', params);
+function generateUploadURL(params, file, name, size, sizeName) {
+  return new Promise((resolve, reject) => {
+    sharp(file.buffer).resize(size, size).toBuffer().then((buffer) => {
+      params.Body = buffer;
+      params.Key = `${sizeName}_${name}`;
+      s3.putObject(params, (err) => {
+        if (err) {
+          reject();
+        } else {
+          resolve(200);
+        }
+      });
+    });
+  });
 }
 
 module.exports = { generateUploadURL };
