@@ -34,7 +34,6 @@ app.post('/*', (req, res) => {
       Bucket: process.env.BUCKET_NAME,
       Key: fileName,
     };
-    console.log(req.file);
     if (req.file) {
       if (req.file.mimetype.includes('image/')) {
         const arrSize = [
@@ -45,7 +44,6 @@ app.post('/*', (req, res) => {
         const arrPromise = [];
         arrSize.forEach((item) => {
           const promise = generateUploadImg(params, req.file, fileName, item.size, item.name).then((data) => {
-             // console.log(data);
               return {
                 size: `${item.name}`,
                 href: `https://upload-s3-bucket-thing.s3.eu-central-1.amazonaws.com/${item.name}_${fileName}`,
@@ -58,7 +56,6 @@ app.post('/*', (req, res) => {
           res.send(data);
         }).catch((err) => console.log(err));
       } else {
-        console.log(params, fileName)
         generatedUploadFile(params, fileName).then(() => {
           res.status(200).send([{
             href: `https://upload-s3-bucket-thing.s3.eu-central-1.amazonaws.com/${fileName}`,

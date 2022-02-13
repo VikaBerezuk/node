@@ -6,20 +6,14 @@ const imageInput = document.querySelector('#imageInput');
 imageForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const file = imageInput.files[0];
-
-  // const { url } = await fetch('/s3Url')
-  //   .then((res) => res.json());
-
   const formDada = new FormData();
   formDada.append('file', file);
- // console.log(file, url)
   await fetch(file.name, {
     method: 'POST',
     body: formDada,
   })
     .then((res) => res.json())
     .then((data)=> {
-      console.log(data);
       if(data.length === 1) {
         const result = document.getElementById('result');
         const a = document.createElement('a');
@@ -49,4 +43,3 @@ imageForm.addEventListener('submit', async (event) => {
       console.log(err);
     });
 });
-;
