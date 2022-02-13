@@ -13,27 +13,35 @@ imageForm.addEventListener('submit', async (event) => {
   const formDada = new FormData();
   formDada.append('file', file);
  // console.log(file, url)
-  await fetch("/*", {
+  await fetch(file.name, {
     method: 'POST',
     body: formDada,
   })
     .then((res) => res.json())
     .then((data)=> {
       console.log(data);
-      const result = document.getElementById('result');
-      const img = document.createElement('img');
-      img.src = data[0].href;
-      const div = document.createElement('div');
-      div.innerText = 'Вы можете скачать вашу картинку:'
-      result.appendChild(img);
-      result.appendChild(div);
-
-      data.forEach((item) => {
+      if(data.length === 1) {
+        const result = document.getElementById('result');
         const a = document.createElement('a');
-        a.href = item.href;
-        a.innerText = ` ${item.size} download img`;
+        a.href = data[0].href;
+        a.innerText = `download file`;
         result.appendChild(a);
-      })
+      } else {
+        const result = document.getElementById('result');
+        const img = document.createElement('img');
+        img.src = data[0].href;
+        const div = document.createElement('div');
+        div.innerText = 'Вы можете скачать вашу картинку:'
+        result.appendChild(img);
+        result.appendChild(div);
+
+        data.forEach((item) => {
+          const a = document.createElement('a');
+          a.href = item.href;
+          a.innerText = ` ${item.size} download img`;
+          result.appendChild(a);
+        })
+      }
     })
     .catch((err) => {
       const node = document.getElementById('result');

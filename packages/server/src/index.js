@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { generateUploadURL } = require('./s3');
+const { generateUploadImg, generatedUploadFile } = require('./s3');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,47 +15,58 @@ const upload = multer({
   },
   fileFilter: (req, file, cb) => {
     const fileSize = parseInt(req.headers['content-length'], 10);
-    if(fileSize > 20971520) {
-      return cb( new Error('File to large'));
+    if (fileSize > 20971520) {
+      return cb(new Error('File to large'));
     }
     return cb(null, true);
-  }
+  },
 });
 
 app.post('/*', (req, res) => {
   const uploadToS3 = upload.single('file');
   uploadToS3(req, res, async (err) => {
     if (err) {
-      console.log(err);
+     return res.status(422).send({message: 'file to large'});
     }
+    const fileName = `${Date.now()}_${req.file.originalname.replace(/\s/g, '')}`;
+    const params = {
+      Body: req.file.buffer,
+      Bucket: process.env.BUCKET_NAME,
+      Key: fileName,
+    };
+    console.log(req.file);
     if (req.file) {
-      const fileName = `${Date.now()}_${req.file.originalname.replace(/\s/g, '')}`;
-      const params = {
-        Body: req.file.buffer,
-        Bucket: process.env.BUCKET_NAME,
-        Key: fileName,
-      };
-      const arrSize = [
-        { name: 'thumb', size: 300 },
-        { name: 'medium', size: 1024 },
-        { name: 'large', size: 2048 },
-      ];
-      const arrPromise = [];
-      arrSize.forEach((item) => {
-        const promise = generateUploadURL(params, req.file, fileName, item.size, item.name).then((data) => {
-            console.log(data);
-            return {
-              size: `${item.name}`,
-              href: `https://upload-s3-bucket-thing.s3.eu-central-1.amazonaws.com/${item.name}_${fileName}`
-            };
-          },
-        );
-        arrPromise.push(promise);
-      });
-      Promise.all(arrPromise).then(data => {
-        console.log(data);
-        res.send(data);
-      }).catch((err) => console.log(err));
+      if (req.file.mimetype.includes('image/')) {
+        const arrSize = [
+          { name: 'thumb', size: 300 },
+          { name: 'medium', size: 1024 },
+          { name: 'large', size: 2048 },
+        ];
+        const arrPromise = [];
+        arrSize.forEach((item) => {
+          const promise = generateUploadImg(params, req.file, fileName, item.size, item.name).then((data) => {
+             // console.log(data);
+              return {
+                size: `${item.name}`,
+                href: `https://upload-s3-bucket-thing.s3.eu-central-1.amazonaws.com/${item.name}_${fileName}`,
+              };
+            },
+          );
+          arrPromise.push(promise);
+        });
+        Promise.all(arrPromise).then(data => {
+          res.send(data);
+        }).catch((err) => console.log(err));
+      } else {
+        console.log(params, fileName)
+        generatedUploadFile(params, fileName).then(() => {
+          res.status(200).send([{
+            href: `https://upload-s3-bucket-thing.s3.eu-central-1.amazonaws.com/${fileName}`,
+          }]);
+        }).catch(() => {
+          res.status(402).send('error');
+        });
+      }
     }
   });
 });

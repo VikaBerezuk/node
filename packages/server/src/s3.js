@@ -15,7 +15,7 @@ const s3 = new aws.S3({
   signatureVersion: 'v4',
 });
 
-function generateUploadURL(params, file, name, size, sizeName) {
+function generateUploadImg(params, file, name, size, sizeName) {
   return new Promise((resolve, reject) => {
     sharp(file.buffer).resize(size, size).toBuffer().then((buffer) => {
       params.Body = buffer;
@@ -31,4 +31,17 @@ function generateUploadURL(params, file, name, size, sizeName) {
   });
 }
 
-module.exports = { generateUploadURL };
+function generatedUploadFile(params, fileName) {
+  return new Promise((resolve, reject) => {
+    params.Key = `${fileName}`;
+    s3.putObject(params, (err) => {
+      if (err) {
+        reject();
+      } else {
+        resolve(200);
+      }
+    });
+  });
+}
+
+module.exports = { generateUploadImg, generatedUploadFile };
