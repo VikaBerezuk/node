@@ -1,3 +1,4 @@
+Ссылка на demo: https://img-node.herokuapp.com/
 1. Что б подключить node_modulesв терминале вызовите команду "yarn install"
 2. Что б проверить тесты в терминале вызовите команду "node  "build" а потом "node start""
 
